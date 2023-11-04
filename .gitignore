@@ -2,4 +2,5 @@ First_EC2Instance/.terraform/providers/registry.terraform.io/hashicorp/aws/5.24.
 First_EC2Instance/.terraform.lock.hcl
 First_EC2Instance/terraform.tfstate
 First_EC2Instance/terraform.tfstate.backup
-
+First_EC2Instance/keys.tf
+WebServer_SingleInstance/keys.tf
