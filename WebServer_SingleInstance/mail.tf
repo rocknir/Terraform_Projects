@@ -27,7 +27,7 @@ resource "aws_route_table" "rt" {
   vpc_id = aws_vpc.vpc_webserver_singleinstance.id
 
   route {
-    cidr_block = "10.0.1.0/24"
+    cidr_block = "0.0.0.0/0"
     gateway_id = aws_internet_gateway.igw.id
   }
 
@@ -57,7 +57,7 @@ resource "aws_route_table_association" "a" {
 resource "aws_security_group" "allow_22_80_443" {
   name        = "allow_22_80_443"
   description = "Allow inbound traffic on 22, 80 and 443"
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = aws_vpc.vpc_webserver_singleinstance.id
 
   ingress {
     description = "SSH from VPC"
@@ -85,8 +85,8 @@ resource "aws_security_group" "allow_22_80_443" {
 
   ingress {
     description = "ping from VPC"
-    from_port   = 0
-    to_port     = 0
+    from_port   = -1
+    to_port     = -1
     protocol    = "icmp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -96,7 +96,7 @@ resource "aws_security_group" "allow_22_80_443" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = ["::/0"]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   tags = {
@@ -109,19 +109,15 @@ resource "aws_network_interface" "web_server_nip" {
   subnet_id       = aws_subnet.subnet_public_a.id
   private_ips     = ["10.0.1.101"]
   security_groups = [aws_security_group.allow_22_80_443.id]
-
-  attachment {
-    instance     = aws_instance.web_server.id
-    device_index = 1
-  }
 }
+
 # 8. assign an elastic IP to the network interface created in step 7
 resource "aws_eip" "one" {
   domain                    = "vpc"
   network_interface         = aws_network_interface.web_server_nip.id
   associate_with_private_ip = "10.0.1.101"
 
-  depends_on = [aws_internet_gateway.igw]
+  depends_on = [aws_internet_gateway.igw,aws_instance.web_server]
 }
 
 # 9. create Amazon Linux server and install/endable apache2
@@ -132,21 +128,25 @@ resource "aws_instance" "web_server" {
   key_name          = "keypair_for_terraform"
 
 
-  network_interface {
-    device_index         = 0
+  network_interface {    
     network_interface_id = aws_network_interface.web_server_nip.id
+    device_index         = 0
   }
 
+/*
   user_data = <<EOF
-                #!/bin/bash
-                # Use this for your user data (script from top to bottom)
-                # install httpd (Linux 2 version)
-                yum update -y
-                yum install -y httpd
-                systemctl start httpd
-                systemctl enable httpd
-                echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
-                EOF
+#!/bin/bash
+# Use this for your user data (script from top to bottom)
+# install httpd (Linux 2 version)
+yum update -y
+yum install -y httpd
+systemctl start httpd
+systemctl enable httpd
+echo "<h1>Hello World from $(hostname -f)</h1>" > /var/www/html/index.html
+EOF
+*/
+
+user_data = file("${path.module}/user-data.txt")
 
   tags = {
     Name = "web server"
