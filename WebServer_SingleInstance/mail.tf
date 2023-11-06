@@ -1,9 +1,5 @@
 provider "aws" {
   region = "us-east-1"
-
-  #keys are keept as variables in a local file
-  access_key = var.AccessKey
-  secret_key = var.SecretKey
 }
 
 # 1. create vpc

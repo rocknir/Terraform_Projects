@@ -4,3 +4,7 @@ First_EC2Instance/terraform.tfstate
 First_EC2Instance/terraform.tfstate.backup
 First_EC2Instance/keys.tf
 WebServer_SingleInstance/keys.tf
+WebServer_SingleInstance/.terraform.lock.hcl
+WebServer_SingleInstance/terraform.tfstate
+WebServer_SingleInstance/terraform.tfstate.backup
+WebServer_SingleInstance/.terraform/providers/registry.terraform.io/hashicorp/aws/5.24.0/windows_amd64/terraform-provider-aws_v5.24.0_x5.exe
